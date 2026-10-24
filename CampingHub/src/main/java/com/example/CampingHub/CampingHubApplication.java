@@ -1,12 +1,7 @@
 package com.example.CampingHub;
 
-
-import com.example.CampingHub.repositories.ClienteRepository;
-import com.example.CampingHub.repositories.FincaRepository;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class CampingHubApplication {
@@ -14,14 +9,4 @@ public class CampingHubApplication {
     public static void main(String[] args) {
         SpringApplication.run(CampingHubApplication.class, args);
     }
-
-    @Bean
-    public CommandLineRunner loadData(FincaRepository fincaRepository, ClienteRepository clienteRepository) {
-        return args -> {
-
-
-
-        };
-    }
-
 }
