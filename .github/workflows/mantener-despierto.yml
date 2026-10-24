@@ -1,0 +1,15 @@
+name: mantener-despierto
+
+# Visita la app cada 10 minutos en horario de Colombia (6 a.m. a 11 p.m.)
+# para que el plan gratuito de Render no la duerma y abra al instante.
+on:
+  schedule:
+    - cron: '*/10 0-3,11-23 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Visitar /salud
+        run: curl -fsS --retry 3 --retry-delay 20 --max-time 90 https://glampinghub-mzyu.onrender.com/salud
