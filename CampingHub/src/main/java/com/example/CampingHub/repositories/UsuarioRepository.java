@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    // Método necesario para el login: busca un usuario que coincida con ambas credenciales
-    Optional<Usuario> findByCorreoAndContraseña(String correo, String contraseña);
+    Optional<Usuario> findByCorreoIgnoreCase(String correo);
+    boolean existsByCorreoIgnoreCase(String correo);
 }
