@@ -1,6 +1,9 @@
 package com.example.CampingHub.controllers;
 
-import com.example.CampingHub.entities.Reserva;
+import com.example.CampingHub.dto.NuevaReserva;
+import com.example.CampingHub.dto.ReservaDTO;
+import com.example.CampingHub.entities.Usuario;
+import com.example.CampingHub.seguridad.AuthInterceptor;
 import com.example.CampingHub.services.ReservaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,77 +15,48 @@ import java.util.List;
 @RequestMapping("/reservas")
 public class ReservaController {
 
-
     private final ReservaService reservaService;
-
 
     public ReservaController(ReservaService reservaService) {
         this.reservaService = reservaService;
     }
 
-    // Endpoint: POST /reservas/crear
+    // POST /reservas/crear  {idFinca, fechaInicio, fechaFin, huespedes}
     @PostMapping("/crear")
-    public ResponseEntity<?> crear(@RequestBody Reserva reserva) {
-        try {
-            Reserva nuevaReserva = reservaService.crearReserva(reserva);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaReserva);
-        } catch (RuntimeException e) {
-            // Se usa BAD_REQUEST porque la RuntimeException en el servicio indica que falta el Cliente o la Finca (error de datos de entrada).
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado al crear la reserva.");
-        }
+    public ResponseEntity<ReservaDTO> crear(@RequestBody NuevaReserva datos,
+                                            @RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        var r = reservaService.crearReserva(datos, usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ReservaDTO.de(r, false));
     }
 
-    // Endpoint: PUT /reservas/confirmar/{id}
-    @PutMapping("/confirmar/{id}")
-    public ResponseEntity<?> confirmar(@PathVariable Long id) {
-        try {
-            Reserva reservaConfirmada = reservaService.confirmarReserva(id);
-            return ResponseEntity.ok(reservaConfirmada);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado al confirmar la reserva con ID: " + id);
-        }
+    // GET /reservas/mias
+    @GetMapping("/mias")
+    public List<ReservaDTO> mias(@RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return reservaService.obtenerReservasDe(usuario).stream().map(r -> ReservaDTO.de(r, false)).toList();
     }
 
-    // Endpoint: PUT /reservas/cancelar/{id}
+    // PUT /reservas/cancelar/{id}  (dueño de la reserva o administrador)
     @PutMapping("/cancelar/{id}")
-    public ResponseEntity<?> cancelar(@PathVariable Long id) {
-        try {
-            Reserva reservaCancelada = reservaService.cancelarReserva(id);
-            return ResponseEntity.ok(reservaCancelada);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado al cancelar la reserva con ID: " + id);
-        }
+    public ReservaDTO cancelar(@PathVariable Long id,
+                               @RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return ReservaDTO.de(reservaService.cancelarReserva(id, usuario), "ADMIN".equals(usuario.getRol()));
     }
 
-    // Endpoint: GET /reservas
+    // PUT /reservas/confirmar/{id}  (administrador)
+    @PutMapping("/confirmar/{id}")
+    public ReservaDTO confirmar(@PathVariable Long id) {
+        return ReservaDTO.de(reservaService.confirmarReserva(id), true);
+    }
+
+    // GET /reservas  (administrador)
     @GetMapping
-    public ResponseEntity<?> obtenerTodas() {
-        try {
-            List<Reserva> reservas = reservaService.obtenerTodasLasReservas();
-            return ResponseEntity.ok(reservas);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado al obtener todas las reservas.");
-        }
+    public List<ReservaDTO> todas() {
+        return reservaService.obtenerTodasLasReservas().stream().map(r -> ReservaDTO.de(r, true)).toList();
     }
 
-    // Endpoint: GET /reservas/{id}
+    // GET /reservas/{id}  (administrador)
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
-        try {
-            Reserva reserva = reservaService.obtenerReservaPorId(id);
-            return ResponseEntity.ok(reserva);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado al obtener la reserva con ID: " + id);
-        }
+    public ReservaDTO porId(@PathVariable Long id) {
+        return ReservaDTO.de(reservaService.obtenerReservaPorId(id), true);
     }
 }
