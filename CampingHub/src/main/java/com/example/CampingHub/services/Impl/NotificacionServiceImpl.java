@@ -29,7 +29,7 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     @Override
     public List<Notificacion> obtenerTodasLasNotificaciones() {
-        return notificacionRepository.findAll();
+        return notificacionRepository.findTop20ByOrderByIdNotificacionDesc();
     }
 
     @Override
