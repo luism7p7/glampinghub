@@ -1,11 +1,11 @@
 name: mantener-despierto
 
-# Visita la app cada 10 minutos en horario de Colombia (6 a.m. a 11 p.m.)
+# Visita la app cada 10 minutos, las 24 horas del día,
 # para que el plan gratuito de Render no la duerma y abra al instante.
 # Consulta /fincas para que la base de datos (Aiven Free) también siga activa.
 on:
   schedule:
-    - cron: '*/10 0-3,11-23 * * *'
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
