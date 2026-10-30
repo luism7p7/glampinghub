@@ -1,18 +1,20 @@
 name: mantener-despierto
 
-# Visita la app cada 10 minutos, las 24 horas del día,
-# para que el plan gratuito de Render no la duerma y abra al instante.
-# Consulta /fincas para que la base de datos (Aiven Free) también siga activa.
+# Respaldo: la app ya se mantiene despierta sola (MantenerDespierto.java visita su propia
+# dirección cada 10 minutos y consulta la base de datos). Este flujo la despierta si alguna
+# vez se durmió o se reinició. GitHub puede retrasar las ejecuciones programadas.
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 6
     steps:
-      - name: Visitar la app
+      - name: Despertar la app y la base de datos
         run: |
-          curl -fsS --retry 3 --retry-delay 20 --max-time 90 https://glampinghub-mzyu.onrender.com/salud
-          curl -fsS --retry 3 --retry-delay 20 --max-time 90 -o /dev/null https://glampinghub-mzyu.onrender.com/fincas
+          # Un arranque en frío del plan gratuito tarda 1 o 2 minutos: se espera hasta 4.
+          curl -sS -o /dev/null -w "salud: %{http_code} en %{time_total}s\n" --max-time 240 https://glampinghub-mzyu.onrender.com/salud || true
+          curl -fsS -o /dev/null -w "fincas: %{http_code} en %{time_total}s\n" --retry 2 --retry-delay 15 --max-time 90 https://glampinghub-mzyu.onrender.com/fincas
