@@ -277,7 +277,7 @@ async function renderProperties(filtered = null) {
           </div>
           <div class="card-info">
               <h5>${esc(p.nombre)}</h5>
-              <p class="lugar">📍 ${esc(p.locacion)} · 👥 ${esc(p.capacidad)}</p>
+              <p class="lugar">${esc(p.locacion)} · ${esc(p.capacidad)}</p>
               <p class="precio">${esc(p.precio)} <span>/ noche</span></p>
               ${estado}
           </div>`;
@@ -363,7 +363,7 @@ async function mostrarModal(p) {
           <div class="detalle-info">
             <span class="chip tipo estatico">${esc(p.tipo)}</span>
             <h2>${esc(p.nombre)}</h2>
-            <p class="lugar">📍 ${esc(p.locacion)} · 👥 ${esc(p.capacidad)}</p>
+            <p class="lugar">${esc(p.locacion)} · ${esc(p.capacidad)}</p>
             <p class="descripcion">${esc(p.descripcion)}</p>
             <div class="ocupadas" id="ocupadas"><span class="spinner chico"></span> Consultando fechas…</div>
           </div>
