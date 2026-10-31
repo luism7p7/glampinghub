@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Carga los datos de ejemplo cuando la base de datos está vacía y deja listas
@@ -42,9 +44,17 @@ public class DatosIniciales implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (fincaRepository.count() == 0) {
-            fincaRepository.saveAll(fincasDeEjemplo());
-            log.info("Se cargaron {} lugares de ejemplo", fincaRepository.count());
+        // Agrega los lugares de ejemplo que falten (por nombre), sin tocar los que ya existen.
+        Set<String> existentes = new HashSet<>();
+        for (Finca f : fincaRepository.findAll()) {
+            if (f.getNombre() != null) existentes.add(f.getNombre().trim().toLowerCase());
+        }
+        List<Finca> nuevas = fincasDeEjemplo().stream()
+                .filter(f -> !existentes.contains(f.getNombre().trim().toLowerCase()))
+                .toList();
+        if (!nuevas.isEmpty()) {
+            fincaRepository.saveAll(nuevas);
+            log.info("Se cargaron {} lugares de ejemplo (total: {})", nuevas.size(), fincaRepository.count());
         }
         asegurarCuenta(DEMO_CLIENTE, "Visitante", "demo123", false);
         asegurarCuenta(DEMO_ADMIN, "Administrador", "admin123", true);
@@ -98,7 +108,25 @@ public class DatosIniciales implements CommandLineRunner {
                         "photo-1666113907288-076e616f0b1e", "photo-1682020193756-4f1948a1de17", "photo-1661805945058-1012dc588d7e"),
                 finca("Camping Río Claro", "Camping", "Río Claro, Antioquia", 8, 180000,
                         "Zona de camping junto al río de mármol, con carpas equipadas, baños, zona de asados y actividades de rafting y espeleología.",
-                        "photo-1657664069074-8b245ee46be9", "photo-1633524792530-25a41459e618", "photo-1738838072982-d0e578967643")
+                        "photo-1657664069074-8b245ee46be9", "photo-1633524792530-25a41459e618", "photo-1738838072982-d0e578967643"),
+                finca("Cabaña Playa Palomino", "Cabaña", "Palomino, La Guajira", 4, 390000,
+                        "Cabaña de madera frente al mar Caribe, entre palmeras y a pocos pasos del río Palomino. Incluye desayuno y hamacas en la terraza.",
+                        "photo-1785576636006-07accba76866", "photo-1620244919974-ba9a164e4b76", "photo-1702743599501-a821d0b38b66"),
+                finca("Glamping Desierto de la Tatacoa", "Glamping", "Villavieja, Huila", 2, 330000,
+                        "Domo en medio del desierto, con cama doble, terraza y telescopio para ver uno de los cielos más despejados de Colombia.",
+                        "photo-1762254799629-b8542e611aa7", "photo-1762255097010-49e99eadd616", "photo-1783696177820-a0f8d10065b6"),
+                finca("Finca Río Fonce", "Finca", "San Gil, Santander", 12, 720000,
+                        "Casa campestre con piscina y zona verde, cerca del río Fonce y de Barichara. Punto de partida para rafting, parapente y caminatas.",
+                        "photo-1714395009352-9aadc86a69bd", "photo-1733153453347-f80cf175fca5", "photo-1784571208419-207020aa09ac"),
+                finca("Ecolodge Amazonas", "Refugio", "Leticia, Amazonas", 6, 460000,
+                        "Cabañas de palma dentro de la selva, con senderos iluminados, avistamiento de delfines rosados y recorridos en canoa por el río.",
+                        "photo-1780686222657-1ba6a42ee4d8", "photo-1761950116791-8bfc445e5186", "photo-1775195560641-4fee7a5a7bfe"),
+                finca("Cabaña Jardín Colonial", "Cabaña", "Jardín, Antioquia", 5, 300000,
+                        "Cabaña en las montañas del suroeste antioqueño, con vista a los cafetales y a 10 minutos del parque principal de Jardín.",
+                        "photo-1789638720830-c2d12b03afbe", "photo-1729866293555-d86cc3e8ab25", "photo-1789638720797-6d6fd066c9d7"),
+                finca("Camping Playa Tayrona", "Camping", "Parque Tayrona, Magdalena", 6, 160000,
+                        "Zona de camping a la sombra junto a la playa, con carpas equipadas, duchas y caminatas por la selva hasta Cabo San Juan.",
+                        "photo-1584574985085-f7191d6eb34b", "photo-1652118976116-951b8d331484", "photo-1688435034170-ca82aba7b644")
         );
     }
 }
