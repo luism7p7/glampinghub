@@ -40,20 +40,24 @@ public class MantenerDespierto {
 
     @Scheduled(initialDelayString = "PT2M", fixedDelayString = "PT10M")
     public void latido() {
+        String bd;
         try {
-            long lugares = fincaRepository.count();
-            log.debug("Latido: base de datos activa ({} lugares)", lugares);
+            bd = "base de datos OK (" + fincaRepository.count() + " lugares)";
         } catch (Exception e) {
+            bd = "base de datos SIN RESPUESTA";
             log.warn("Latido: la base de datos no respondió: {}", e.getMessage());
         }
-        if (urlPublica.isBlank()) return;
+        if (urlPublica.isBlank()) {
+            log.info("Latido: {}", bd);
+            return;
+        }
         try {
             HttpRequest req = HttpRequest.newBuilder(URI.create(urlPublica + "/salud"))
                     .timeout(Duration.ofSeconds(60)).header("User-Agent", "glampinghub-latido").GET().build();
             int estado = http.send(req, HttpResponse.BodyHandlers.discarding()).statusCode();
-            log.debug("Latido: {} respondió {}", urlPublica, estado);
+            log.info("Latido: {} · visita a {}/salud respondió {}", bd, urlPublica, estado);
         } catch (Exception e) {
-            log.warn("Latido: no se pudo visitar {}: {}", urlPublica, e.getMessage());
+            log.warn("Latido: {} · no se pudo visitar {}: {}", bd, urlPublica, e.getMessage());
         }
     }
 }
