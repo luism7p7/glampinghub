@@ -36,7 +36,7 @@ class FlujoReservaTests {
 
     private long primeraFinca() throws Exception {
         String body = mvc.perform(get("/fincas")).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(6))))
+                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(12))))
                 .andExpect(jsonPath("$[0].imagenes", hasSize(3)))
                 .andExpect(jsonPath("$[0].reservas").doesNotExist())
                 .andReturn().getResponse().getContentAsString();
